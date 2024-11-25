@@ -1,0 +1,178 @@
+﻿@using System.Security.Claims
+@model IEnumerable<ProjectQuiz.Data.Quiz>
+
+@{
+    ViewData["Title"] = "Quizzes Index";
+    var isProjectOwner = ViewBag.ProjectOwnerId == int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)); // Kiểm tra nếu người dùng là chủ dự án
+}
+
+<div class="dashboard-container">
+    <div class="row">
+        <!-- Sidebar -->
+        <div class="col-md-3 sidebar">
+            <h2>@ViewBag.ProjectName</h2>
+            <ul class="nav flex-column">
+                <li class="nav-item">
+                    <a class="nav-link" asp-action="Details" asp-controller="Projects" asp-route-id="@ViewBag.ProjectId">Details</a>
+                </li>
+
+                <li class="nav-item">
+                    <a class="nav-link" asp-controller="ProjectMembers" asp-action="Index" asp-route-projectId="@ViewBag.ProjectId">Members</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link active" asp-action="Index" asp-controller="Quizs" asp-route-id="@ViewBag.ProjectId">Quizzes</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-action="QuizResults" asp-controller="Quizs" asp-route-id="@ViewBag.ProjectId">Results</a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Main Content -->
+        <div class="col-md-9 content">
+            <div class="header">
+                <h3>Quiz List</h3>
+
+            </div>
+
+            <!-- "Take All Quizzes" button only visible if the user is not the project owner -->
+            @if (!isProjectOwner)
+            {
+                <a asp-action="TakeAllQuizzes" asp-route-id="@ViewBag.ProjectId" class="btn btn-primary">Take All Quizzes</a>
+            }
+
+            <!-- "Create Question" button only visible if the user is the project owner -->
+            @if (isProjectOwner)
+            {
+                <a asp-action="Create" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-success">Create Question</a>
+            }
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th>Question</th>
+                        <th>Choices</th>
+                        <th>Question Type</th>
+                        <th>Correct Answer (Project Owner Only)</th>
+                        @if (isProjectOwner)
+                        {
+                            <th>Actions</th> <!-- Thêm cột hành động để hiển thị nút xóa -->
+                        }
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <strong>@item.QuestionText</strong>
+                            </td>
+                            <td>
+                                <ul>
+                                    @{
+                                        var answers = !string.IsNullOrEmpty(item.Answers) ? item.Answers.Split(',') : new string[0];
+                                        var letters = new[] { 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H' };
+
+                                        for (int i = 0; i < answers.Length; i++)
+                                        {
+                                            var answer = answers[i].Trim();
+                                            if (!string.IsNullOrWhiteSpace(answer))
+                                            {
+                                                <li><strong>@letters[i]</strong> - @answer</li>
+                                            }
+                                        }
+                                    }
+                                </ul>
+                            </td>
+                            <td>@item.QuestionType</td>
+                            <td>
+                                @if (isProjectOwner)
+                                {
+                                    if (item.QuestionType == "multiple-choice")
+                                    {
+                                        string correctAnswerLetter = item.IsCorrect switch
+                                        {
+                                            "1" => "A",
+                                            "2" => "B",
+                                            "3" => "C",
+                                            "4" => "D",
+                                            _ => "N/A"
+                                        };
+                                        @correctAnswerLetter
+                                    }
+                                    else if (item.QuestionType == "short-answer")
+                                    {
+                                        @item.CorrectAnswer
+                                    }
+                                }
+                            </td>
+                            @if (isProjectOwner)
+                            {
+                                <td>
+                                    <!-- Form xóa quiz -->
+                                    <form asp-action="DeleteQuiz" asp-route-id="@item.QuizId" asp-route-projectId="@ViewBag.ProjectId" method="post" class="d-inline">
+                                        <button type="submit" class="btn btn-danger">Delete</button>
+                                    </form>
+                                </td>
+                            }
+                        </tr>
+                    }
+                </tbody>
+            </table>
+
+
+        </div>
+
+    </div>
+</div>
+
+<style>
+    .dashboard-container {
+        padding: 20px;
+    }
+
+    .sidebar {
+        background-color: #f8f9fa;
+        padding: 15px;
+        border-radius: 8px;
+    }
+
+    .nav-link {
+        font-size: 18px;
+        margin-bottom: 10px;
+    }
+
+        .nav-link.active {
+            font-weight: bold;
+            color: #007bff;
+        }
+
+    .content {
+        padding-left: 30px;
+    }
+
+    .header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    table {
+        width: 100%; /* Chiếm toàn bộ chiều rộng */
+        border-collapse: collapse; /* Xóa viền giữa các ô */
+    }
+
+    th, td {
+        text-align: center; /* Căn giữa nội dung */
+        padding: 10px; /* Thêm khoảng cách cho các ô */
+        border: 1px solid #dee2e6; /* Viền cho bảng */
+    }
+
+    th {
+        background-color: #f8f9fa; /* Màu nền cho tiêu đề bảng */
+        font-weight: bold;
+    }
+
+    tr:nth-child(even) {
+        background-color: #f2f2f2; /* Màu nền cho các hàng chẵn */
+    }
+</style>

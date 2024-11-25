@@ -1,0 +1,96 @@
+﻿@model ProjectQuiz.Data.Quiz
+
+@{
+    ViewData["Title"] = "Create";
+}
+
+<h1>Create Quiz Question</h1>
+
+<h4>Quiz</h4>
+<hr />
+<div class="row">
+    <div class="col-md-6">
+        <form asp-action="Create" method="post" asp-route-projectId="@ViewBag.ProjectId">
+            <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+
+            <div class="form-group">
+                <label asp-for="Title" class="control-label"></label>
+                <input asp-for="Title" class="form-control" />
+                <span asp-validation-for="Title" class="text-danger"></span>
+            </div>
+
+            <input type="hidden" asp-for="ProjectId" value="@ViewBag.ProjectId" />
+
+            <div class="form-group">
+                <label asp-for="QuestionType" class="control-label">Question Type</label>
+                <select asp-for="QuestionType" class="form-control" id="questionTypeSelect">
+                    <option value="multiple-choice">Multiple Choice</option>
+                    <option value="short-answer">Short Answer</option>
+                </select>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="QuestionText" class="control-label">Question</label>
+                <input asp-for="QuestionText" class="form-control" />
+                <span asp-validation-for="QuestionText" class="text-danger"></span>
+            </div>
+
+            <div id="multipleChoiceOptions" style="display: none;">
+                <div class="form-group">
+                    <label class="control-label">Multiple Choice Options</label>
+                    <div id="multipleChoiceList">
+                        <input type="text" class="form-control mt-2" name="Answers[]" placeholder="Enter option 1" />
+                        <input type="text" class="form-control mt-2" name="Answers[]" placeholder="Enter option 2" />
+                        <input type="text" class="form-control mt-2" name="Answers[]" placeholder="Enter option 3" />
+                        <input type="text" class="form-control mt-2" name="Answers[]" placeholder="Enter option 4" />
+                    </div>
+                </div>
+
+                <div class="form-group">
+                    <label class="control-label">Correct Answer</label>
+                    <select class="form-control" name="correctAnswerMCQ">
+                        <option value="1">Option 1</option>
+                        <option value="2">Option 2</option>
+                        <option value="3">Option 3</option>
+                        <option value="4">Option 4</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Short Answer Option -->
+            <div id="shortAnswerOption" style="display:none;">
+                <div class="form-group">
+                    <label class="control-label">Correct Answer</label>
+                    <input type="text" class="form-control" name="CorrectAnswerSAQ" placeholder="Enter the correct answer" />
+                </div>
+            </div>
+
+            <div class="form-group">
+                <input type="submit" value="Create" class="btn btn-primary" />
+            </div>
+        </form>
+
+        @section Scripts {
+            @Html.Partial("_ValidationScriptsPartial")
+
+            <script>
+                document.getElementById('questionTypeSelect').addEventListener('change', function () {
+                    var selectedValue = this.value;
+                    var multipleChoiceOptions = document.getElementById('multipleChoiceOptions');
+                    var shortAnswerOption = document.getElementById('shortAnswerOption');
+
+                    if (selectedValue === 'multiple-choice') {
+                        multipleChoiceOptions.style.display = 'block';
+                        shortAnswerOption.style.display = 'none';
+                    } else if (selectedValue === 'short-answer') {
+                        multipleChoiceOptions.style.display = 'none';
+                        shortAnswerOption.style.display = 'block';
+                    }
+                });
+
+                // Trigger change event on page load to show/hide correct sections
+                document.getElementById('questionTypeSelect').dispatchEvent(new Event('change'));
+            </script>
+        }
+    </div>
+</div>

@@ -1,0 +1,50 @@
+﻿@model IEnumerable<ProjectQuiz.Data.ProjectMember>
+
+@{
+    ViewData["Title"] = "Project Members";
+}
+
+<h2>Project Members</h2>
+
+@if (!(bool)ViewBag.IsProjectOwner)
+{
+    <div class="alert alert-warning">
+        You are not the project owner. You cannot add or manage members.
+    </div>
+}
+else
+{
+    <p>
+        <a asp-action="Create" asp-route-projectId="@ViewBag.ProjectId" class="btn btn-primary">Add New Member</a>
+    </p>
+}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Username</th>
+            <th>Role</th>
+            @if ((bool)ViewBag.IsProjectOwner)
+            {
+                <th>Actions</th>
+            }
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.User.Username</td>
+                <td>@item.Role</td>
+                @if ((bool)ViewBag.IsProjectOwner)
+                {
+                    <td>
+                        <form asp-action="Delete" asp-route-id="@item.Id" asp-route-projectId="@ViewBag.ProjectId" method="post" class="d-inline">
+                            <button type="submit" class="btn btn-danger">Delete</button>
+                        </form>
+                    </td>
+                }
+            </tr>
+        }
+    </tbody>
+</table>
